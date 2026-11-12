@@ -1,8 +1,8 @@
 {
   "repo": "knmarcin/support-kb-4471",
   "issues": {
-    "parser": 1,
-    "hint": 2,
-    "one-day-move": 3
+    "parser": { "number": 1, "state": "closed", "reason": "completed" },
+    "hint": { "number": 2, "state": "closed", "reason": "not planned" },
+    "one-day-move": { "number": 3, "state": "open", "reason": null }
   }
 }

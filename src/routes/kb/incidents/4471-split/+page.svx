@@ -18,7 +18,7 @@ than one problem. This page splits them. Each problem has a ticket of its own, w
 of reports it covers.
 
 <Callout kind="warn">
-Not one issue. The parser fix that is queued does not fix the other problems.
+Not one issue. Engineering has closed #4471, and one of its problems is still open.
 </Callout>
 
 ## The problems
@@ -48,11 +48,23 @@ Not one issue. The parser fix that is queued does not fix the other problems.
 The [incident page](/kb/incidents/4471) shows the same reports by cause only, with the one-day
 moves as a footnote under `parser`.
 
+## After engineering closed #4471
+
+Engineering closed #4471 with an outcome for some of the problems, not for all. The table above
+shows each one.
+
+- **parser** is fixed. Its ticket is closed as completed.
+- **hint** is won't fix, because the booking-v3 form is retired. Nothing was repaired. Its ticket is
+  closed as not planned, not as completed, so nobody reads it as fixed.
+- **one-day-move** has no outcome. The desk's view files these reports under `parser`, so they look
+  closed with it. A parser that reads the month first cannot move a date by one day, so the
+  parser fix does not explain them. Its ticket stays open.
+
 ## What to do next
 
-- Fix each ticket on its own. Closing the parser ticket does not close the other two.
-- Do not merge these on subject ([decision 0001](/kb/decisions/0001-dedupe-by-subject)): the
-  same subject lines appear under more than one problem.
-- Render this page again when the export changes. Its numbers are computed from the data.
+- Have someone read the one-day-move reports. They may be about time zones, not about date order.
+- Do not merge reports on subject alone ([decision 0001](/kb/decisions/0001-dedupe-by-subject)):
+  the same subject lines appear under more than one problem.
+- Render this page again when the export or the tickets change. Its numbers are computed from the data.
 
 <RenderStamp {signature} />

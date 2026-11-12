@@ -42,7 +42,8 @@ The desk merged 412 reports into #4471 as one issue. They hold more than one pro
 - Page: `src/routes/kb/incidents/4471-split/+page.svx` (signed; ends with its desk ref).
 - The page as the desk sees it: `rendered/kb/incidents/4471-split.html`.
 - Logic: `src/lib/kb/problems.ts`, shown by `src/lib/kb/ProblemTable.svelte`.
-- Tickets: the issues of this repo, one per problem, listed in `src/lib/data/tickets-4471.json`.
+- Tickets: the issues of this repo, one per problem, listed with their state in `src/lib/data/tickets-4471.json`.
+- What engineering did when it closed #4471: `src/lib/data/engineering-4471.json`.
 
 To render every page again: `npm install`, then `npm run build`. The pages land in `rendered/`.
 To print the problems and their counts: `npm run problems`.
