@@ -1,0 +1,57 @@
+---
+layout: runbook
+title: '#4471 · split by problem'
+owner: knmarcin
+status: open
+reviewed: 2026-11-12
+signature: v1.eyJzdWIiOiI4OTEzIiwiYXVkIjoiY2hhbGxlbmdlOndoYXQtaXQtc2hvd3MiLCJpYXQiOjE3OTQ0Nzg3NzYsImV4cCI6MTc5NDU2NTE3Nn0.VAN16gLd3SX3VuwoHSjUzRY_XZczD4TASvV0JTFSzjM
+---
+
+<script>
+  import ProblemTable from '#lib/kb/ProblemTable.svelte';
+  import Callout from '#lib/kb/Callout.svelte';
+  import RenderStamp from '#lib/kb/RenderStamp.svelte';
+</script>
+
+[#4471](/kb/incidents/4471) was merged as one issue with one fix queued. Its reports hold more
+than one problem. This page splits them. Each problem has a ticket of its own, with the number
+of reports it covers.
+
+<Callout kind="warn">
+Not one issue. The parser fix that is queued does not fix the other problems.
+</Callout>
+
+## The problems
+
+<ProblemTable ticket={4471} />
+
+- **parser.** The shared parser reads every date month first. A tenant that writes the day first
+  gets day and month flipped. This is the bug #4471 names.
+- **hint.** The booking-v3 form prints `MM/DD/YYYY` under its date field. People type the month
+  first, as the hint says, and the form reads the day first. The date is flipped again, but by the
+  form, so the parser fix does not change it.
+- **one-day-move.** The date moves by one day, and day and month are not flipped. The desk noted
+  these reports by hand (`desk-notes.json`). The cause table files them under `parser` only
+  because of their tenant; the parser fix does not explain them.
+
+## How the reports were counted
+
+1. The ticket system exports in pages that overlap, so a report can come twice. Each report id
+   counts once.
+2. A report's cause comes from its tenant: the locale they write dates in, and the booking form
+   they run (`causes.ts`). It does not come from the intake tag, which is a guess from the
+   reporter's browser, and it does not come from the subject line.
+3. A report that the desk read as a one-day move counts under that problem, not under its
+   tenant's cause (`problems.ts`). So every report sits under exactly one problem.
+
+The [incident page](/kb/incidents/4471) shows the same reports by cause only, with the one-day
+moves as a footnote under `parser`.
+
+## What to do next
+
+- Fix each ticket on its own. Closing the parser ticket does not close the other two.
+- Do not merge these on subject ([decision 0001](/kb/decisions/0001-dedupe-by-subject)): the
+  same subject lines appear under more than one problem.
+- Render this page again when the export changes. Its numbers are computed from the data.
+
+<RenderStamp {signature} />
