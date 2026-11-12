@@ -11,7 +11,7 @@
   const rows = (reports as Report[]).length;
   const merged = $derived(uniqueById(reports as Report[]).filter((r) => r.mergedInto === ticket));
   const groups = $derived(groupByProblem(merged, tenantOf, notes.oneDayMove));
-  const placed = $derived(groups.reduce((n, g) => n + g.reports.length, 0));
+  const twice = $derived(groups.filter((g) => g.filedUnder.length));
   const subjects = $derived(new Set(merged.map((r) => r.subject)).size);
   const shared = $derived(sharedSubjects(groups).length);
   const issue = (problem: string): number | undefined => (tickets.issues as Record<string, number>)[problem];
@@ -37,7 +37,10 @@
       <tr>
         <td><code>{g.problem}</code></td>
         <td class="n">{g.reports.length}</td>
-        <td>{PROBLEM_SUMMARY[g.problem]}</td>
+        <td>
+          {PROBLEM_SUMMARY[g.problem]}
+          {#if g.filedUnder.length}<span class="small">Filed under <code>{g.filedUnder.join(', ')}</code> by tenant.</span>{/if}
+        </td>
         <td class="small">{list(g.channels)}</td>
         <td>{g.tenants}</td>
         <td class="small">{g.firstSeen} → {g.lastSeen}</td>
@@ -54,9 +57,14 @@
 </table>
 
 <p class="note">
-  The export has {rows} rows. Counted once per report id, that is {merged.length} reports, and {placed} of them
-  sit under exactly one problem above.
+  The export has {rows} rows. Counted once per report id, that is {merged.length} reports.
 </p>
+{#each twice as g (g.problem)}
+  <p class="note">
+    The {g.reports.length} <code>{g.problem}</code> reports are also counted under <code>{g.filedUnder.join(', ')}</code>,
+    where the desk files them by tenant. So the rows add up to more than {merged.length}.
+  </p>
+{/each}
 <p class="note">
   {shared} of the {subjects} subject lines in these reports appear under more than one problem.
 </p>

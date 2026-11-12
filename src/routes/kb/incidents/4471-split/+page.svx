@@ -31,7 +31,7 @@ Not one issue. The parser fix that is queued does not fix the other problems.
   first, as the hint says, and the form reads the day first. The date is flipped again, but by the
   form, so the parser fix does not change it.
 - **one-day-move.** The date moves by one day, and day and month are not flipped. The desk noted
-  these reports by hand (`desk-notes.json`). The cause table files them under `parser` only
+  these reports by hand (`desk-notes.json`). The desk's view files them under `parser` only
   because of their tenant; the parser fix does not explain them.
 
 ## How the reports were counted
@@ -41,8 +41,9 @@ Not one issue. The parser fix that is queued does not fix the other problems.
 2. A report's cause comes from its tenant: the locale they write dates in, and the booking form
    they run (`causes.ts`). It does not come from the intake tag, which is a guess from the
    reporter's browser, and it does not come from the subject line.
-3. A report that the desk read as a one-day move counts under that problem, not under its
-   tenant's cause (`problems.ts`). So every report sits under exactly one problem.
+3. The counts are the desk's own view, as it was exported: a report is filed under its tenant's
+   cause. A report that the desk read as a one-day move stays filed there, and it is also counted
+   under the one-day-move problem (`problems.ts`).
 
 The [incident page](/kb/incidents/4471) shows the same reports by cause only, with the one-day
 moves as a footnote under `parser`.

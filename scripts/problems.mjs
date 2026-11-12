@@ -27,7 +27,7 @@ try {
           summary: PROBLEM_SUMMARY[g.problem],
           tenants: [...new Set(g.reports.map((r) => r.tenant))].sort(),
           channels: g.channels,
-          taggedAs: g.taggedAs,
+          filedUnder: g.filedUnder,
           firstSeen: g.firstSeen,
           lastSeen: g.lastSeen,
           ids: g.reports.map((r) => r.id).sort(),

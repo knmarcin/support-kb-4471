@@ -1,12 +1,12 @@
-// Which problem a report is about. Pages explain it; this file is what runs.
+// The problems inside a ticket. Pages explain it; this file is what runs.
 //
-// causes.ts places a report by its tenant: `parser` or `hint`. The desk has also read some reports
-// as something else (desk-notes.json, `oneDayMove`): the date moved by one day, it did not flip.
-// causes.ts counts those where they are filed and footnotes them. Here they are a problem of their
-// own, so every report is counted once, under the problem it is really about.
-import { causeOf, type Cause, type Report, type Tenant } from '#lib/kb/causes';
+// It counts the way the desk's own view counts (causes.ts, CauseTable): a report is filed under the
+// cause its tenant gives it, `parser` or `hint`. The desk has also read some reports as something
+// else (desk-notes.json, `oneDayMove`): the date moved by one day, it did not flip. Those stay
+// filed where the desk files them, and they are a problem of their own on top.
+import { groupByCause, type CauseGroup, type Report, type Tenant } from '#lib/kb/causes';
 
-export type Problem = Cause | 'one-day-move' | 'unplaced';
+export type Problem = CauseGroup['cause'] | 'one-day-move';
 
 // One line per problem, for tables. Words only: every count is computed.
 export const PROBLEM_SUMMARY: Record<Problem, string> = {
@@ -16,19 +16,14 @@ export const PROBLEM_SUMMARY: Record<Problem, string> = {
   unplaced: 'No day-first tenant on file, so the cause is not known.',
 };
 
-export function problemOf(r: Pick<Report, 'id' | 'channel'>, t: Tenant | undefined, oneDayMove: readonly string[]): Problem {
-  if (oneDayMove.includes(r.id)) return 'one-day-move';
-  return causeOf(r, t) ?? 'unplaced';
-}
-
 export type ProblemGroup = {
   problem: Problem;
   reports: Report[];
+  // Causes these reports are filed under in the desk's view, when the problem is not a cause itself.
+  filedUnder: CauseGroup['cause'][];
   tenants: number;
   // How the reports came in: channel → count.
   channels: Record<string, number>;
-  // What intake tagged these reports as: tag → count.
-  taggedAs: Record<string, number>;
   // Distinct subject lines among these reports.
   subjects: string[];
   firstSeen: string;
@@ -37,32 +32,35 @@ export type ProblemGroup = {
 
 const tally = (keys: string[]) => keys.reduce<Record<string, number>>((n, k) => ({ ...n, [k]: (n[k] ?? 0) + 1 }), {});
 
-// Every report lands in exactly one group. Largest group first.
+function describe(problem: Problem, reports: Report[], filedUnder: CauseGroup['cause'][]): ProblemGroup {
+  const days = reports.map((r) => r.receivedAt.slice(0, 10)).sort();
+  return {
+    problem,
+    reports,
+    filedUnder,
+    tenants: new Set(reports.map((r) => r.tenant)).size,
+    channels: tally(reports.map((r) => r.channel)),
+    subjects: [...new Set(reports.map((r) => r.subject))].sort(),
+    firstSeen: days[0],
+    lastSeen: days[days.length - 1],
+  };
+}
+
+// One group per cause, exactly as the desk's view has them, then the reports the desk read as a
+// one-day move. Those are counted twice on purpose: where they are filed, and as their own problem.
 export function groupByProblem(
   reports: Report[],
   tenantOf: (r: Report) => Tenant | undefined,
   oneDayMove: readonly string[],
 ): ProblemGroup[] {
-  const byProblem = new Map<Problem, Report[]>();
-  for (const r of reports) {
-    const problem = problemOf(r, tenantOf(r), oneDayMove);
-    byProblem.set(problem, [...(byProblem.get(problem) ?? []), r]);
+  const causes = groupByCause(reports, tenantOf);
+  const groups = causes.map((g) => describe(g.cause, g.reports, []));
+  const moved = causes.flatMap((g) => g.reports.filter((r) => oneDayMove.includes(r.id)));
+  if (moved.length) {
+    const under = causes.filter((g) => g.reports.some((r) => oneDayMove.includes(r.id))).map((g) => g.cause);
+    groups.push(describe('one-day-move', moved, under));
   }
-  return [...byProblem.entries()]
-    .map(([problem, rs]) => {
-      const days = rs.map((r) => r.receivedAt.slice(0, 10)).sort();
-      return {
-        problem,
-        reports: rs,
-        tenants: new Set(rs.map((r) => r.tenant)).size,
-        channels: tally(rs.map((r) => r.channel)),
-        taggedAs: tally(rs.map((r) => r.meta.intakeTag)),
-        subjects: [...new Set(rs.map((r) => r.subject))].sort(),
-        firstSeen: days[0],
-        lastSeen: days[days.length - 1],
-      };
-    })
-    .sort((a, b) => b.reports.length - a.reports.length);
+  return groups;
 }
 
 // Subject lines that show up under more than one problem: why a subject match cannot tell them apart.
